@@ -7,23 +7,15 @@ import numpy as np
 directory = '/Users/malcolmdavidson/Documents/Code/ODI/IACMI/Shear_Rheology/25000_MW'
 file = '5_wt%_25k_SS_20C.txt'
 keyPhrase = "shear stress	shear rate	viscosity	time	normal stress	torque"
-"""
+
 ## import_rheology_to_df ##
 # Version 1
 # Import contents at filepath into a dataframe.
 ##
 def import_rheology_to_df(file_path, data_start):
 
-	pd.read_csv(file_path, sep=' ', header=data_start)
-"""
+	return pd.read_csv(file_path, sep='\t', skiprows=data_start-10, encoding="iso-8859-1")
 
-## import_rheology_to_df ##
-# Version 2
-# Import contents at filepath into a dataframe.
-##
-def import_rheology_to_df(data, data_start):
-
-	pd.read_csv(data, sep=' ', header=data_start)
 
 
 ## build_filepath function ##
@@ -60,7 +52,7 @@ def file_IO(file_path, key_phrase):
 			if key_phrase in line:
 				data_start.append(num)
 
-	return f, data_start
+	return data_start
 
 
 def test(flex):
@@ -70,6 +62,7 @@ def test(flex):
 # Script #
 #test(import_rheology_to_df(build_filepath(directory,file), start_of_data))
 filePath = build_filepath(directory, file)
-reducedData, startOfData = file_IO(filePath, keyPhrase)
-#df = import_rheology_to_df(reducedData, startOfData[0])
-test(reducedData)
+startOfData = file_IO(filePath, keyPhrase)
+df = import_rheology_to_df(filePath, startOfData[0])
+test(df.head())
+test(df.shape)
