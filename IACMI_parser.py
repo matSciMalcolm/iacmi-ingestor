@@ -1,20 +1,28 @@
 #IACMI_parser.py
 
-#Libraries
+# Version Notes #
+# Version: 4.0
+# Developmetn Goal: Smartly import each "chunk" of rheology
+# data belonging to an individual rheology experiment into its own DF
+
+# Libraries
 import pandas as pd
 import numpy as np
 
-directory = '/Users/malcolmdavidson/Documents/Code/ODI/IACMI/Shear_Rheology/25000_MW'
-file = '5_wt%_25k_SS_20C.txt'
-keyPhrase = "shear stress	shear rate	viscosity	time	normal stress	torque"
+
+# Global Variables
+DIRECTORY = '/Users/malcolmdavidson/Documents/Code/ODI/IACMI/Shear_Rheology/25000_MW'
+FILE = '5_wt%_25k_SS_20C.txt'
+KEYPHRASE = "shear stress	shear rate	viscosity	time	normal stress	torque"
+
 
 ## import_rheology_to_df ##
 # Version 1
 # Import contents at filepath into a dataframe.
 ##
-def import_rheology_to_df(file_path, data_start):
+def import_rheology_to_df(file_path, data_start, chunk_size):
 
-	return pd.read_csv(file_path, sep='\t', skiprows=data_start, encoding="iso-8859-1")
+	return pd.read_csv(file_path, sep='\t', skiprows=data_start, encoding="iso-8859-1",nrows=chunk_size)
 
 
 
@@ -39,20 +47,34 @@ def file_IO(file_path, key_phrase):
 	with open(file_path, 'r', encoding="iso-8859-1") as f:
 
 		lines = [line.rstrip('\n') for line in f]
-		lines = filter(str.strip, lines)
+		lines = list(filter(str.strip, lines))
 		data_start = [num for (num, line) in enumerate(lines,0) if key_phrase in line]
 
 	return lines, data_start
 
 
-# Script #
-#test(import_rheology_to_df(build_filepath(directory,file), start_of_data))
-filePath = build_filepath(directory, file)
-reducedData, startOfData = file_IO(filePath, keyPhrase)
+## calculate_chunk_size ##
+# Determines number of rows to import for a single rheology experiment.
+# 1. Calculate defference between enumerated_data[1] and enumerated_data[0]
+# 2. Subtract the number of filler lines
+# 3. Return chunk size for pd as int
+##
+def calculate_chunk_size(enumerated_data, filler):
+	return enumerated_data[1]-enumerated_data[0]-filler
 
-df = import_rheology_to_df(filePath, startOfData[0])
+
+
+
+# Script #
+
+filePath = build_filepath(DIRECTORY, FILE)
+reducedData, startOfData = file_IO(filePath, KEYPHRASE)
+chunkSize = calculate_chunk_size(startOfData,2)
+
+df = import_rheology_to_df(filePath, startOfData[0], chunkSize)
+
+print(chunkSize)
 print(df)
-#test(df.shape)
 
 
 
