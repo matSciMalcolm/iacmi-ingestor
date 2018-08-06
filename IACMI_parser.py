@@ -14,7 +14,7 @@ keyPhrase = "shear stress	shear rate	viscosity	time	normal stress	torque"
 ##
 def import_rheology_to_df(file_path, data_start):
 
-	return pd.read_csv(file_path, sep='\t', skiprows=data_start-10, encoding="iso-8859-1")
+	return pd.read_csv(file_path, sep='\t', skiprows=data_start, encoding="iso-8859-1")
 
 
 
@@ -24,13 +24,6 @@ def import_rheology_to_df(file_path, data_start):
 def build_filepath(directory_path, file_name):
 
    return str(directory_path + '/' + file_name)
-
-
-## Search for start of file ##
-#
-##
-#def find_start_of_data():
-	# search for 'Steady state flow step'
 
 
 ## File I/O ##
@@ -44,25 +37,34 @@ def build_filepath(directory_path, file_name):
 def file_IO(file_path, key_phrase):
 
 	with open(file_path, 'r', encoding="iso-8859-1") as f:
-		data_start = []
 
-		for num, line in enumerate(f, 1):
-			line.rstrip('\n')
+		lines = [line.rstrip('\n') for line in f]
+		lines = filter(str.strip, lines)
+		data_start = [num for (num, line) in enumerate(lines,0) if key_phrase in line]
 
-			if key_phrase in line:
-				data_start.append(num)
-
-	return data_start
-
-
-def test(flex):
-	print(flex)
+	return lines, data_start
 
 
 # Script #
 #test(import_rheology_to_df(build_filepath(directory,file), start_of_data))
 filePath = build_filepath(directory, file)
-startOfData = file_IO(filePath, keyPhrase)
+reducedData, startOfData = file_IO(filePath, keyPhrase)
+
 df = import_rheology_to_df(filePath, startOfData[0])
-test(df.head())
-test(df.shape)
+print(df)
+#test(df.shape)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
